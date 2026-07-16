@@ -1,0 +1,51 @@
+using UnityEngine;
+using TMPro; // 使用 TextMeshPro UI
+using UnityEngine.UI;
+using Unity.Robotics.ROSTCPConnector;
+
+public class DynamicROSConnection : MonoBehaviour
+{
+    [Header("UI Elements")]
+    public TMP_InputField ipInputField; // 拖入你的输入框
+    public Button connectButton;        // 拖入你的按钮
+
+    [Header("ROS Settings")]
+    public int rosPort = 10000;
+
+    private void Start()
+    {
+        // 1. 读取上次保存的 IP 地址（第一次运行默认是 192.168.1.xxx 方便修改）
+        string savedIP = PlayerPrefs.GetString("LastROSIP", "192.168.");
+        ipInputField.text = savedIP;
+
+        // 2. 给按钮绑定点击事件
+        connectButton.onClick.AddListener(OnConnectButtonClicked);
+    }
+
+    private void OnConnectButtonClicked()
+    {
+        string targetIP = ipInputField.text.Trim();
+
+        // 检查输入是否为空
+        if (string.IsNullOrEmpty(targetIP))
+        {
+            Debug.LogWarning("IP Address cannot be empty!");
+            return;
+        }
+
+        // 保存这次输入的 IP，下次打开应用直接读取
+        PlayerPrefs.SetString("LastROSIP", targetIP);
+        PlayerPrefs.Save();
+
+        // 获取 ROS 连接实例
+        ROSConnection ros = ROSConnection.GetOrCreateInstance();
+
+        // 断开现有的连接（防止它还在尝试连接之前的错误 IP）
+        ros.Disconnect();
+
+        Debug.Log($"Attempting to connect to ROS at {targetIP}:{rosPort}");
+
+        // 使用新 IP 重新发起连接
+        ros.Connect(targetIP, rosPort);
+    }
+}
