@@ -4451,8 +4451,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: abf5dd95af34553fa8ec15eec25d0004, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  leftTopic: /mujoco_server/cameras/head_zedmini_left_camera/head_zedmini_left/rgb/image_raw_compressed
-  rightTopic: /mujoco_server/cameras/head_zedmini_right_camera/head_zedmini_right/rgb/image_raw_compressed
+  leftTopic: /zed/zed_node/rgb/color/rect/image/compressed
+  rightTopic: /zed/zed_node/rgb/color/rect/image/compressed
 --- !u!1 &1777138877
 GameObject:
   m_ObjectHideFlags: 0

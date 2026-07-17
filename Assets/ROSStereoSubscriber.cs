@@ -6,8 +6,8 @@ public class ROSStereoSubscriber : MonoBehaviour
 {
     // 订阅左右眼画面话题
     [Header("ROS Topics")]
-    public string leftTopic = "/mujoco_server/cameras/head_zedmini_left_camera/head_zedmini_left/rgb/image_raw_compressed";
-    public string rightTopic = "/mujoco_server/cameras/head_zedmini_right_camera/head_zedmini_right/rgb/image_raw_compressed";
+    public string leftTopic = "/zed/zed_node/rgb/color/rect/image/compressed";
+    public string rightTopic = "/zed/zed_node/rgb/color/rect/image/compressed";
 
     private ROSConnection ros;
     private Texture2D texLeft;
