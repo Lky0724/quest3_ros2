@@ -4,20 +4,22 @@ using RosMessageTypes.Std;
 
 public class HeadPoseToGarmiPublisher : MonoBehaviour
 {
-    private ROSConnection ros;
+    [Tooltip("Drag the ROSConnection GameObject for the control endpoint (e.g. port 10001) here. Falls back to the default singleton if left empty.")]
+    public ROSConnection ros;
     // public string topicName = "garmi_head/head_command";
     public string topicName = "/garmi/head/command";
     public float publishFrequency = 0.01f; // 100Hz 发送频率
     private float timeElapsed;
 
     // 根据你的机器人 URDF 实际情况，可能需要反转运动方向
-    public bool invertTheta1 = true; 
+    public bool invertTheta1 = true;
     public bool invertTheta2 = false;
 
     void Start()
     {
-        // 获取 ROS 连接实例
-        ros = ROSConnection.GetOrCreateInstance();
+        // 获取 ROS 连接实例（若未在 Inspector 中指定，则退回默认单例）
+        if (ros == null)
+            ros = ROSConnection.GetOrCreateInstance();
         // 注册 Publisher
         ros.RegisterPublisher<Float64MultiArrayMsg>(topicName);
     }

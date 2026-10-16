@@ -388,6 +388,60 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 41378789}
   m_CullTransparentMesh: 1
+--- !u!1 &129588913
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 129588915}
+  - component: {fileID: 129588914}
+  m_Layer: 0
+  m_Name: ROS_ImageConnection
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &129588914
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 129588913}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7acef0b79454c9b4dae3f8139bc4ba77, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_RosIPAddress: 127.0.0.1
+  m_RosPort: 10000
+  m_ConnectOnStart: 1
+  m_KeepaliveTime: 1
+  m_NetworkTimeoutSeconds: 2
+  m_SleepTimeSeconds: 0.01
+  m_ShowHUD: 0
+  m_TFTopics:
+  - /tf
+  listenForTFMessages: 1
+--- !u!4 &129588915
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 129588913}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 3.30497, y: -0.03, z: -2.06577}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &222166759
 GameObject:
   m_ObjectHideFlags: 0
@@ -1569,7 +1623,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ipInputField: {fileID: 842600530}
   connectButton: {fileID: 222166761}
-  rosPort: 10000
+  imageConnection: {fileID: 129588914}
+  controlConnection: {fileID: 1222996824}
 --- !u!4 &619153807
 Transform:
   m_ObjectHideFlags: 0
@@ -3026,6 +3081,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3dd1d42ca7c5f8ebf92615b628a149e8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  ros: {fileID: 1222996824}
   topicName: /garmi/head/command
   publishFrequency: 0.001
   invertTheta1: 1
@@ -3166,6 +3222,60 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1206366135}
   m_CullTransparentMesh: 1
+--- !u!1 &1222996823
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1222996825}
+  - component: {fileID: 1222996824}
+  m_Layer: 0
+  m_Name: ROS_ControlConnection
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1222996824
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1222996823}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7acef0b79454c9b4dae3f8139bc4ba77, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_RosIPAddress: 127.0.0.1
+  m_RosPort: 10001
+  m_ConnectOnStart: 1
+  m_KeepaliveTime: 1
+  m_NetworkTimeoutSeconds: 2
+  m_SleepTimeSeconds: 0.01
+  m_ShowHUD: 0
+  m_TFTopics:
+  - /tf
+  listenForTFMessages: 1
+--- !u!4 &1222996825
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1222996823}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 3.30497, y: -0.03, z: -2.06577}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1302255627
 GameObject:
   m_ObjectHideFlags: 0
@@ -4453,6 +4563,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   leftTopic: /zed/zed_node/rgb/color/rect/image/compressed
   rightTopic: /zed/zed_node/rgb/color/rect/image/compressed
+  ros: {fileID: 129588914}
 --- !u!1 &1777138877
 GameObject:
   m_ObjectHideFlags: 0
@@ -5205,3 +5316,5 @@ SceneRoots:
   - {fileID: 1825945902}
   - {fileID: 1946283368}
   - {fileID: 619153807}
+  - {fileID: 129588915}
+  - {fileID: 1222996825}

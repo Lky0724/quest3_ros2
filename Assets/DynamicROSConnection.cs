@@ -9,8 +9,11 @@ public class DynamicROSConnection : MonoBehaviour
     public TMP_InputField ipInputField; // 拖入你的输入框
     public Button connectButton;        // 拖入你的按钮
 
-    [Header("ROS Settings")]
-    public int rosPort = 10000;
+    [Header("ROS Connections")]
+    [Tooltip("ROSConnection for the image/video endpoint (e.g. port 10000).")]
+    public ROSConnection imageConnection;
+    [Tooltip("ROSConnection for the head-control endpoint (e.g. port 10001).")]
+    public ROSConnection controlConnection;
 
     private void Start()
     {
@@ -37,15 +40,25 @@ public class DynamicROSConnection : MonoBehaviour
         PlayerPrefs.SetString("LastROSIP", targetIP);
         PlayerPrefs.Save();
 
-        // 获取 ROS 连接实例
-        ROSConnection ros = ROSConnection.GetOrCreateInstance();
+        // 两个连接共用同一个机器人 IP，但各自保留自己在 Inspector 中配置的端口
+        Reconnect(imageConnection, targetIP);
+        Reconnect(controlConnection, targetIP);
+    }
+
+    private void Reconnect(ROSConnection ros, string targetIP)
+    {
+        if (ros == null)
+        {
+            Debug.LogWarning("DynamicROSConnection: a ROSConnection reference is not assigned in the Inspector.");
+            return;
+        }
 
         // 断开现有的连接（防止它还在尝试连接之前的错误 IP）
         ros.Disconnect();
 
-        Debug.Log($"Attempting to connect to ROS at {targetIP}:{rosPort}");
+        Debug.Log($"Attempting to connect {ros.name} to ROS at {targetIP}:{ros.RosPort}");
 
-        // 使用新 IP 重新发起连接
-        ros.Connect(targetIP, rosPort);
+        // 使用新 IP、原有端口重新发起连接
+        ros.Connect(targetIP, ros.RosPort);
     }
 }

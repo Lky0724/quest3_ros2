@@ -9,15 +9,18 @@ public class ROSStereoSubscriber : MonoBehaviour
     public string leftTopic = "/zed/zed_node/rgb/color/rect/image/compressed";
     public string rightTopic = "/zed/zed_node/rgb/color/rect/image/compressed";
 
-    private ROSConnection ros;
+    [Header("ROS Connection")]
+    [Tooltip("Drag the ROSConnection GameObject for the image endpoint (e.g. port 10000) here. Falls back to the default singleton if left empty.")]
+    public ROSConnection ros;
     private Texture2D texLeft;
     private Texture2D texRight;
     private Material stereoMaterial;
 
     void Start()
     {
-        ros = ROSConnection.GetOrCreateInstance();
-        
+        if (ros == null)
+            ros = ROSConnection.GetOrCreateInstance();
+
         texLeft = new Texture2D(1, 1);
         texRight = new Texture2D(1, 1);
         
