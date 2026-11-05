@@ -1,6 +1,13 @@
 using UnityEngine;
 using Unity.Robotics.ROSTCPConnector;
 using RosMessageTypes.Sensor;
+using System.Collections;
+#if UNITY_ANDROID
+using Unity.Collections;
+using UnityEngine.XR;
+using UnityEngine.XR.Management;
+using UnityEngine.XR.OpenXR.Features.Meta;
+#endif
 
 public class ROSStereoSubscriber : MonoBehaviour
 {
@@ -12,41 +19,153 @@ public class ROSStereoSubscriber : MonoBehaviour
     [Header("ROS Connection")]
     [Tooltip("Drag the ROSConnection GameObject for the image endpoint (e.g. port 10000) here. Falls back to the default singleton if left empty.")]
     public ROSConnection ros;
+
+    [Header("Display")]
+    [Tooltip("Quest 3: 72, 80, 90 or 120. 120 is an exact multiple of the 60 fps video. 60 is not supported.")]
+    public float displayRefreshRate = 120f;
+
     private Texture2D texLeft;
     private Texture2D texRight;
     private Material stereoMaterial;
+
+    // Newest undecoded frames. Callbacks only store them, so a backlog can never block a frame:
+    // ROSConnection delivers every queued message within a single Update on the main thread,
+    // and this main thread also renders the scene and publishes the head commands.
+    private byte[] pendingLeft;
+    private byte[] pendingRight;
+
+    private int receivedFrames;
+    private int decodedFrames;
+    private int renderedFrames;
+    private float decodeMsSum;
+    private float decodeMsMax;
+    private float renderMsMax;
+    private float statsStart;
 
     void Start()
     {
         if (ros == null)
             ros = ROSConnection.GetOrCreateInstance();
 
-        texLeft = new Texture2D(1, 1);
-        texRight = new Texture2D(1, 1);
-        
         // 获取当前物体上的材质球
         stereoMaterial = GetComponent<Renderer>().material;
 
-        // 订阅左右眼画面
+        texLeft = CreateVideoTexture();
+        stereoMaterial.SetTexture("_LeftTex", texLeft);
         ros.Subscribe<CompressedImageMsg>(leftTopic, ReceiveLeftImage);
-        ros.Subscribe<CompressedImageMsg>(rightTopic, ReceiveRightImage);
+
+        if (rightTopic == leftTopic)
+        {
+            // Mono camera: both eyes share one texture, so each frame is decoded only once
+            texRight = texLeft;
+        }
+        else
+        {
+            texRight = CreateVideoTexture();
+            ros.Subscribe<CompressedImageMsg>(rightTopic, ReceiveRightImage);
+        }
+        stereoMaterial.SetTexture("_RightTex", texRight);
+
+        statsStart = Time.realtimeSinceStartup;
+        StartCoroutine(RequestDisplayRefreshRate());
+    }
+
+    private IEnumerator RequestDisplayRefreshRate()
+    {
+#if UNITY_ANDROID
+        // XR may still be starting up when the scene loads
+        XRDisplaySubsystem display = null;
+        float start = Time.realtimeSinceStartup;
+        while (display == null || !display.running)
+        {
+            if (Time.realtimeSinceStartup - start > 10f)
+            {
+                Debug.LogWarning("[RefreshRate] XR display subsystem not available");
+                yield break;
+            }
+            yield return null;
+            var settings = XRGeneralSettings.Instance;
+            var loader = settings != null && settings.Manager != null ? settings.Manager.activeLoader : null;
+            display = loader != null ? loader.GetLoadedSubsystem<XRDisplaySubsystem>() : null;
+        }
+
+        if (display.TryGetSupportedDisplayRefreshRates(Allocator.Temp, out var rates))
+            Debug.Log($"[RefreshRate] Supported: {string.Join(", ", rates)} Hz");
+
+        bool accepted = display.TryRequestDisplayRefreshRate(displayRefreshRate);
+        Debug.Log($"[RefreshRate] Request {displayRefreshRate} Hz: {(accepted ? "accepted" : "rejected")}");
+#else
+        yield break;
+#endif
+    }
+
+    private static Texture2D CreateVideoTexture()
+    {
+        // No mipmaps: LoadImage would otherwise have to generate them for every frame
+        var texture = new Texture2D(2, 2, TextureFormat.RGB24, false);
+        texture.filterMode = FilterMode.Bilinear;
+        texture.wrapMode = TextureWrapMode.Clamp;
+        return texture;
     }
 
     void ReceiveLeftImage(CompressedImageMsg message)
     {
-        // 打印日志：看看到底有没有收到，以及收到的是什么格式
-        Debug.Log($"[左眼] 收到数据! 格式: {message.format}, 字节数: {message.data.Length}");
-        
-        // 暴力破解：不管三七二十一，直接当成 JPG/PNG 硬解压
-        texLeft.LoadImage(message.data);
-        stereoMaterial.SetTexture("_LeftTex", texLeft);
+        pendingLeft = message.data;
+        receivedFrames++;
     }
 
     void ReceiveRightImage(CompressedImageMsg message)
     {
-        Debug.Log($"[右眼] 收到数据! 格式: {message.format}, 字节数: {message.data.Length}");
-        
-        texRight.LoadImage(message.data);
-        stereoMaterial.SetTexture("_RightTex", texRight);
+        pendingRight = message.data;
+    }
+
+    void Update()
+    {
+        // At most one decode per texture per rendered frame, always the newest image
+        DecodePending(ref pendingLeft, texLeft);
+        DecodePending(ref pendingRight, texRight);
+        LogStats();
+    }
+
+    private void DecodePending(ref byte[] pending, Texture2D texture)
+    {
+        if (pending == null)
+            return;
+
+        byte[] jpeg = pending;
+        pending = null;
+
+        var watch = System.Diagnostics.Stopwatch.StartNew();
+        texture.LoadImage(jpeg);
+        float decodeMs = (float)watch.Elapsed.TotalMilliseconds;
+
+        decodedFrames++;
+        decodeMsSum += decodeMs;
+        decodeMsMax = Mathf.Max(decodeMsMax, decodeMs);
+    }
+
+    private void LogStats()
+    {
+        renderedFrames++;
+        renderMsMax = Mathf.Max(renderMsMax, Time.unscaledDeltaTime * 1000f);
+
+        float elapsed = Time.realtimeSinceStartup - statsStart;
+        if (elapsed < 5f)
+            return;
+
+        float decodeMsAvg = decodedFrames > 0 ? decodeMsSum / decodedFrames : 0f;
+        Debug.Log(
+            $"[VideoStats] received {receivedFrames / elapsed:F1} fps, " +
+            $"decoded {decodedFrames / elapsed:F1} fps, " +
+            $"decode avg {decodeMsAvg:F1} ms, max {decodeMsMax:F1} ms, " +
+            $"render {renderedFrames / elapsed:F1} fps, longest frame {renderMsMax:F0} ms");
+
+        receivedFrames = 0;
+        decodedFrames = 0;
+        renderedFrames = 0;
+        decodeMsSum = 0f;
+        decodeMsMax = 0f;
+        renderMsMax = 0f;
+        statsStart = Time.realtimeSinceStartup;
     }
 }
