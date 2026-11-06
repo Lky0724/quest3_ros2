@@ -4561,9 +4561,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: abf5dd95af34553fa8ec15eec25d0004, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  leftTopic: /zed/zed_node/rgb/color/rect/image/compressed
-  rightTopic: /zed/zed_node/rgb/color/rect/image/compressed
+  leftTopic: /zed/vr/image/compressed
+  rightTopic: /zed/vr/image/compressed
   ros: {fileID: 129588914}
+  displayRefreshRate: 120
 --- !u!1 &1777138877
 GameObject:
   m_ObjectHideFlags: 0
