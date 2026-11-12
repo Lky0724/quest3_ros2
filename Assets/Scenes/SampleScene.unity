@@ -4452,6 +4452,7 @@ GameObject:
   - component: {fileID: 1692211661}
   - component: {fileID: 1692211660}
   - component: {fileID: 1692211663}
+  - component: {fileID: 1692211664}
   m_Layer: 0
   m_Name: Quad
   m_TagString: Untagged
@@ -4565,6 +4566,22 @@ MonoBehaviour:
   rightTopic: /zed/vr/image/compressed
   ros: {fileID: 129588914}
   displayRefreshRate: 120
+--- !u!114 &1692211664
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1692211658}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4ad4660b78dafedafac1eaddb8624c00, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  fontSize: 1.5
+  margin: {x: 0.08, y: 0.06}
+  updateInterval: 0.5
+  textColor: {r: 0, g: 1, b: 0, a: 1}
 --- !u!1 &1777138877
 GameObject:
   m_ObjectHideFlags: 0

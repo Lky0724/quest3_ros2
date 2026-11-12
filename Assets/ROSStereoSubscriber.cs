@@ -24,6 +24,9 @@ public class ROSStereoSubscriber : MonoBehaviour
     [Tooltip("Quest 3: 72, 80, 90 or 120. 120 is an exact multiple of the 60 fps video. 60 is not supported.")]
     public float displayRefreshRate = 120f;
 
+    // Frames decoded into the left texture since start; read by VideoFpsOverlay
+    public int DecodedFrameCount { get; private set; }
+
     private Texture2D texLeft;
     private Texture2D texRight;
     private Material stereoMaterial;
@@ -131,6 +134,9 @@ public class ROSStereoSubscriber : MonoBehaviour
     {
         if (pending == null)
             return;
+
+        if (texture == texLeft)
+            DecodedFrameCount++;
 
         byte[] jpeg = pending;
         pending = null;
